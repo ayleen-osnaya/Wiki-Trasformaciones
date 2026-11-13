@@ -17,16 +17,16 @@ int main(void)
     system("mkdir \"resultados\"");
 
     char *imagenes[TOTAL_IMAGENES] = {
-        "./10 imagenes/Imagen1.bmp",
-        "./10 imagenes/Imagen2.bmp",
-        "./10 imagenes/Imagen3.bmp",
-        "./10 imagenes/Imagen4.bmp",
-        "./10 imagenes/Imagen5.bmp",
-        "./10 imagenes/Imagen6.bmp",
-        "./10 imagenes/Imagen7.bmp",
-        "./10 imagenes/Imagen8.bmp",
-        "./10 imagenes/Imagen9.bmp",
-        "./10 imagenes/Imagen10.bmp"
+        "./imagenes/Imagen1.bmp",
+        "./imagenes/Imagen2.bmp",
+        "./imagenes/Imagen3.bmp",
+        "./imagenes/Imagen4.bmp",
+        "./imagenes/Imagen5.bmp",
+        "./imagenes/Imagen6.bmp",
+        "./imagenes/Imagen7.bmp",
+        "./imagenes/Imagen8.bmp",
+        "./imagenes/Imagen9.bmp",
+        "./imagenes/Imagen10.bmp"
     };
 
     omp_set_num_threads(NUM_THREADS);
