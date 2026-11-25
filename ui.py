@@ -204,10 +204,13 @@ class MainWindow(QMainWindow):
         bak.mkdir(parents=True, exist_ok=True)
         for k in range(1, MAX_IMAGES + 1):
             p = d / f"Imagen{k}.bmp"
-            if p.exists():  # si ya hay respaldo, es una copia sobrante de una ejecucion interrumpida
+            if p.exists():
                 p.unlink() if (bak / p.name).exists() else shutil.move(str(p), str(bak / p.name))
         for k, src in enumerate(self.files, 1):
-            shutil.copyfile(src, d / f"Imagen{k}.bmp")
+            src_path = Path(src)
+            if not src_path.exists() and (bak / src_path.name).exists():
+                src_path = bak / src_path.name
+            shutil.copyfile(src_path, d / f"Imagen{k}.bmp")
 
     def unstage(self):
         d = WORK / "imagenes"
