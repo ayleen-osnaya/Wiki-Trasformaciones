@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <omp.h>
 #include "elemento.h"
 
@@ -89,7 +90,7 @@ static void mover_desde_img(const char *mascara,
     mover_archivo(origen, destino);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
     char *imagenes[TOTAL_IMAGENES] = {
         ".\\imagenes\\Imagen1.bmp",
@@ -107,6 +108,19 @@ int main(void)
     int hilos_usados = 0;
     int imagenes_procesadas = 0;
     double inicio, fin;
+    int kernel_gris = KERNEL_SIZE;
+    int kernel_color = KERNEL_SIZE;
+
+    // Kernel variable desde la interfaz: --kernel-gray N  --kernel-color N
+    for (int i = 1; i + 1 < argc; i++) {
+        if (strcmp(argv[i], "--kernel-gray") == 0) {
+            kernel_gris = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "--kernel-color") == 0) {
+            kernel_color = atoi(argv[++i]);
+        }
+    }
+    if (kernel_gris < 1) kernel_gris = KERNEL_SIZE;
+    if (kernel_color < 1) kernel_color = KERNEL_SIZE;
 
     // Desactivar el ajuste dinamico para solicitar el equipo de hilos indicado.
     omp_set_dynamic(0);
@@ -200,12 +214,12 @@ int main(void)
 
                 #pragma omp section
                 {
-                    blur(imagenes[k], out_blur_c, KERNEL_SIZE);
+                    blur(imagenes[k], out_blur_c, kernel_color);
                 }
 
                 #pragma omp section
                 {
-                    blur_gray(ruta_gris, out_blur_g, KERNEL_SIZE);
+                    blur_gray(ruta_gris, out_blur_g, kernel_gris);
                 }
 
                 #pragma omp section

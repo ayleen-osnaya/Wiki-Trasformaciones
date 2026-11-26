@@ -29,6 +29,8 @@ TRANSFORMS = [
     ("ihc", "Espejo horizontal color", "inv_hor_color.bmp"),
     ("bg", "Desenfoque gris", "blur_bn.bmp"),
     ("bc", "Desenfoque color", "blur_color.bmp"),
+    ("ex", "Bordes en X", "edge_x.bmp"),
+    ("ey", "Bordes en Y", "edge_y.bmp"),
 ]
 
 
@@ -70,7 +72,7 @@ class DropList(QListWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("BMP Parallel Studio")
+        self.setWindowTitle("BMP Chihuahuas Electricos Parallel Studio")
         self.resize(1100, 760)
         self.files, self.selected, self.proc, self.out = [], [], None, []
         self.buf = QByteArray()
@@ -146,7 +148,7 @@ class MainWindow(QMainWindow):
         for r, (text, sp) in enumerate((("Kernel gris:", self.kg), ("Kernel color:", self.kc))):
             sp.setRange(1, 99)
             sp.setSingleStep(2)
-            sp.setValue(27)
+            sp.setValue(5)
             form.addWidget(QLabel(text), r, 0)
             form.addWidget(sp, r, 1)
         right.addWidget(box)
@@ -224,7 +226,9 @@ class MainWindow(QMainWindow):
 
     # ------------------------------------------------------------ ejecucion
     def ensure_exe(self):
-        if EXE.exists():
+        # Recompila si el .exe no existe o si transformadas.c / elemento.h son mas nuevos.
+        deps = [SOURCE, HERE / "elemento.h"]
+        if EXE.exists() and all(not d.exists() or d.stat().st_mtime <= EXE.stat().st_mtime for d in deps):
             return True
         cmd = ["gcc", "-O2", "-fopenmp", "-o", str(EXE), str(SOURCE)]
         self.say("Compilando: " + " ".join(cmd))
@@ -249,8 +253,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Programa no disponible", "No se pudo compilar transformadas.c.")
             return
         if "argc" not in SOURCE.read_text(errors="ignore"):
-            self.say("Nota: este transformadas.c no lee argumentos; kernel y selección de transformaciones "
-                     "no se aplican (usa su KERNEL_SIZE y todas las secciones).")
+            self.say("Nota: este transformadas.c no lee argumentos; el kernel no se aplica (usa su KERNEL_SIZE).")
         shutil.rmtree(WORK / "resultados", ignore_errors=True)  # el programa tambien lo borra
         self.stage()
         self.bar.setRange(0, len(self.files))
@@ -266,7 +269,8 @@ class MainWindow(QMainWindow):
         self.proc.errorOccurred.connect(lambda e: self.done(-1, None) if e == QProcess.ProcessError.FailedToStart else None)
         self.proc.start(str(EXE), ["--kernel-gray", str(self.kg.value()), "--kernel-color", str(self.kc.value()),
                                    "--transforms", ",".join(self.selected)])
-        self.say(f"Procesando {len(self.files)} imagen(es)…")
+        self.say(f"Procesando {len(self.files)} imagen(es) con kernel gris={self.kg.value()}, "
+                 f"kernel color={self.kc.value()}…")
         self.run.setEnabled(False)
         self.stop.setEnabled(True)
         self.timer.start()
